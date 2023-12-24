@@ -27,7 +27,6 @@ def gen_transform(img_size):
 
 
 def generate_npz(dataset, name):
-    os.makedirs("custom_statistics", exist_ok=True)
     imgs = list()
     for idx in range(len(dataset)):
         img, _ = dataset[idx]
