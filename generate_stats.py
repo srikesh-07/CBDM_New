@@ -131,3 +131,9 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01):
                         radii=manifold.radii)
 
     print("Finished..")
+
+
+if __name__ == "__main__":
+    os.makedirs("./data", exist_ok=True)
+    gen_custom_stats("cub", "./data")
+    gen_custom_stats("celeba-5", "./data")
