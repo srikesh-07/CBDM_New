@@ -225,8 +225,6 @@ def train():
         if FLAGS.img_size != celeb_img_size:
             print(f"[WARNING] Image size is set to {celeb_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
             FLAGS.img_size = celeb_img_size
-        FLAGS.num_class = len(set(dataset.labels))
-        print(f"Total Number of Labels: {FLAGS.num_class}")
         dataset, _, _ = get_celeb_loader(data_root=dataset_root,
                                             transform_mode=tran_transform)
     elif FLAGS.data_type == "cub":
@@ -254,7 +252,10 @@ def train():
     else:
         print('Please enter a data type included in [cifar10, cifar100, cifar10lt, cifar100lt]')
 
-    FLAGS.num_class = len(set(dataset.labels))
+    if hasattr(dataset, "class_names"): # Exception for CUB
+        FLAGS.num_class = len(dataset.class_names)
+    else:
+        FLAGS.num_class = len(set(dataset.targets))
     print(f"Total Number of Labels: {FLAGS.num_class}")
 
     dataloader = torch.utils.data.DataLoader(
@@ -262,7 +263,7 @@ def train():
         shuffle=True, num_workers=FLAGS.num_workers, drop_last=True)
     datalooper = infiniteloop(dataloader)
     print('Dataset {} contains {} images with {} classes'.format(
-        FLAGS.data_type, len(dataset.targets), len(np.unique(dataset.targets))))
+        FLAGS.data_type, len(dataset), FLAGS.num_class))
 
     # get class weights for the current dataset
     def class_counter(all_labels):

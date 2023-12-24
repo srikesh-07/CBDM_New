@@ -78,10 +78,17 @@ class Cub2011(VisionDataset):
         else:
             self.data = self.data[self.data.is_training_img == 0]
 
+        self.images = list()
+        self.targets = list()   
+        for _, sample in self.data.iterrows():
+            self.images.append(sample.filepath)
+            self.targets.append(sample.target - 1)
+
     def _check_integrity(self):
         try:
             self._load_metadata()
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
         for index, row in self.data.iterrows():
@@ -107,9 +114,9 @@ class Cub2011(VisionDataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        sample = self.data.iloc[idx]
-        path = os.path.join(self.root, self.base_folder, sample.filepath)
-        target = sample.target - 1  # Targets start at 1 by default, so shift to 0
+        # sample = self.data.iloc[idx]
+        path = os.path.join(self.root, self.base_folder, self.images[idx])
+        target = self.targets[idx]  # Targets start at 1 by default, so shift to 0
         img = self.loader(path)
 
         if self.transform is not None:

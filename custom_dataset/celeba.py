@@ -31,19 +31,19 @@ data_transforms = {
 class LT_Dataset(Dataset):
     def __init__(self, root, txt, transform=None):
         self.img_path = []
-        self.labels = []
+        self.targets = []
         self.transform = transform
         with open(txt) as f:
             for line in f:
                 self.img_path.append(os.path.join(root, line.split()[0]))
-                self.labels.append(int(line.split()[1]))
+                self.targets.append(int(line.split()[1]))
 
     def __len__(self):
-        return len(self.labels)
+        return len(self.targets)
 
     def __getitem__(self, index):
         path = self.img_path[index]
-        label = self.labels[index]
+        label = self.targets[index]
 
         with open(path, 'rb') as f:
             sample = Image.open(f).convert('RGB')
