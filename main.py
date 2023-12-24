@@ -225,6 +225,8 @@ def train():
         if FLAGS.img_size != celeb_img_size:
             print(f"[WARNING] Image size is set to {celeb_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
             FLAGS.img_size = celeb_img_size
+        FLAGS.num_class = len(set(dataset.labels))
+        print(f"Total Number of Labels: {FLAGS.num_class}")
         dataset, _, _ = get_celeb_loader(data_root=dataset_root,
                                             transform_mode=tran_transform)
     elif FLAGS.data_type == "cub":
@@ -252,6 +254,9 @@ def train():
     else:
         print('Please enter a data type included in [cifar10, cifar100, cifar10lt, cifar100lt]')
 
+    FLAGS.num_class = len(set(dataset.labels))
+    print(f"Total Number of Labels: {FLAGS.num_class}")
+
     dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=FLAGS.batch_size,
         shuffle=True, num_workers=FLAGS.num_workers, drop_last=True)
@@ -266,7 +271,7 @@ def train():
     weight = class_counter(dataset.targets)
 
     # model setup
-    FLAGS.num_class = 100 if 'cifar100' in FLAGS.data_type else 10
+    # FLAGS.num_class = 100 if 'cifar100' in FLAGS.data_type else 10
     net_model = UNet(
         T=FLAGS.T, ch=FLAGS.ch, ch_mult=FLAGS.ch_mult, attn=FLAGS.attn,
         num_res_blocks=FLAGS.num_res_blocks, dropout=FLAGS.dropout,
@@ -413,9 +418,12 @@ def eval():
     # evaluate IS/FID
     if 'cifar100' in FLAGS.data_type:
         FLAGS.fid_cache = './stats/cifar100.train.npz'
-    else:
+    elif FLAGS.data_type == 'cifar10':
         FLAGS.fid_cache = './stats/cifar10.train.npz'
-
+    else:
+        print("[INFO] Loaded Custom Statistics")
+        FLAGS.fid_cache = f"./stats/{FLAGS.data_type}.train.npz"
+        
     if not FLAGS.sampled:
         model.load_state_dict(ckpt['ema_model'])
     else:
