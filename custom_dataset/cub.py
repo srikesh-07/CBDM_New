@@ -119,16 +119,16 @@ class Cub2011(VisionDataset):
         return img, target
 
 
-def get_cub_loader(data_root, transform=None):
+def get_cub_loader(data_root, transform_mode=None):
     # data_root = '/home/temp/data/CelebA/'
     set_train = Cub2011(root=data_root, 
                         train=True, 
                         download=True, 
-                        transform=transform)
+                        transform=transform_mode)
     set_val = Cub2011(root=data_root, 
                       train=False, 
                       download=True,
-                      transform=transform)
+                      transform=transform_mode)
 
     # train_loader = DataLoader(set_train, batch_size, shuffle=True, num_workers=num_workers,pin_memory=cuda.is_available())
     # val_loader = DataLoader(set_val, batch_size, shuffle=False, num_workers=num_workers, pin_memory=cuda.is_available())
