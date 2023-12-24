@@ -107,7 +107,7 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01):
         dataset, _, _ = get_cub_loader(data_root=dataset_root,
                                        transform_mode=gen_transform(cub_img_size))
     elif dataset_name == "imagenet-lt":
-        assert os.path.isdir(os.path.join(root, "images")), "ImageNet dataset cannot be automatically downloaded. Downlaod the dataset and create a folder called `images` in the root folder and copy all the images."
+        assert os.path.isdir(os.path.join(root, "images")), "ImageNet dataset cannot be automatically downloaded. Download the dataset and create a folder called `images` in the root folder and copy all the images."
         if os.path.isdir(os.path.join(root, "ImageNet_LT")):
             gdown.download_folder(id="19cl6GK5B3p5CxzVBy5i4cWSmBy9-rT_-",
                                   output=root)
@@ -126,7 +126,7 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01):
     manifold = embeddings_creator.compute_manifold(torch.stack([dataset[idx][0] for idx in range(len(dataset))], dim=0))
     # print('saving manifold to', fname, '...')
     os.makedirs("./embeddings", exist_ok=True)
-    np.savez_compressed(os.path.join("./embeddings", f"{dataset.__class__.__name__.lower()}.emb"),
+    np.savez_compressed(os.path.join("./embeddings", f"{dataset.__class__.__name__.lower()}_feats"),
                         feature=manifold.features,
                         radii=manifold.radii)
 
