@@ -36,7 +36,7 @@ def generate_npz(dataset, name):
     # imgs = np.stack(imgs, axis=0)
     # print(imgs.shape)
     mu, sigma = get_statistics(imgs)
-    np.savez(os.path.join("stats", f"{name.lower()}_stats"),
+    np.savez(os.path.join("stats", f"{name.lower()}.train"),
                 mu=mu,
                 sigma=sigma)
 
@@ -126,7 +126,7 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01):
     manifold = embeddings_creator.compute_manifold(torch.stack([dataset[idx][0] for idx in range(len(dataset))], dim=0))
     # print('saving manifold to', fname, '...')
     os.makedirs("./embeddings", exist_ok=True)
-    np.savez_compressed(os.path.join("./embeddings", f"{dataset.__class__.__name__.lower()}.train"),
+    np.savez_compressed(os.path.join("./embeddings", f"{dataset.__class__.__name__.lower()}.emb"),
                         feature=manifold.features,
                         radii=manifold.radii)
 
