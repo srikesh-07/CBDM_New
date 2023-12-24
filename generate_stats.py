@@ -26,10 +26,10 @@ def gen_transform(img_size):
     return tran_transform
 
 
-def generate_npz(dataset):
+def generate_npz(dataset, name):
     os.makedirs("custom_statistics", exist_ok=True)
     imgs = list()
-    for idx in len(dataset):
+    for idx in range(len(dataset)):
         img, _ = dataset[idx]
         imgs.append(np.array(img))
     print(f"Generating Statistics for {dataset.__class__.__name__} "
@@ -37,7 +37,7 @@ def generate_npz(dataset):
     # imgs = np.stack(imgs, axis=0)
     # print(imgs.shape)
     mu, sigma = get_statistics(imgs)
-    np.savez(os.path.join("custom_statistics", f"{dataset.__class__.__name__.lower()}_stats"),
+    np.savez(os.path.join("custom_statistics", f"{name.lower()}_stats"),
                 mu=mu,
                 sigma=sigma)
 
@@ -100,12 +100,12 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01):
         dataset_root = os.path.join(root, "CelebA")
         if not check_celeba5(dataset_root):
             download_extract_celeba5(dataset_root)
-            dataset, _, _ = get_celeb_loader(data_root=root,
-                                                transform_mode=gen_transform(celeb_img_size))
+        dataset, _, _ = get_celeb_loader(data_root=dataset_root,
+                                            transform_mode=gen_transform(celeb_img_size))
     elif dataset_name == "cub":
         dataset_root = os.path.join(root, "CUB")
         os.makedirs(dataset_root, exist_ok=True)
-        dataset, _, _ = get_cub_loader(data_root=root,
+        dataset, _, _ = get_cub_loader(data_root=dataset_root,
                                        transform_mode=gen_transform(cub_img_size))
     elif dataset_name == "imagenet-lt":
         assert os.path.isdir(os.path.join(root, "images")), "ImageNet dataset cannot be automatically downloaded. Downlaod the dataset and create a folder called `images` in the root folder and copy all the images."
@@ -122,9 +122,9 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01):
         print('Please enter a data type included in [cifar10, cifar100, cifar10lt, cifar100lt]')
         exit(0)
 
-    generate_npz(dataset)
-    embeddings_creator = IPR(32, k=5, num_samples=50000, model='InceptionV3')
-    manifold = embeddings_creator.compute_manifold([dataset[idx][0] for idx in range(len(dataset))])
+    generate_npz(dataset, dataset_name)
+    embeddings_creator = IPR(32, k=5, num_samples=len(dataset))
+    manifold = embeddings_creator.compute_manifold(torch.stack([dataset[idx][0] for idx in range(len(dataset))], dim=0))
     # print('saving manifold to', fname, '...')
     np.savez_compressed(os.path.join("stats", f"{dataset.__class__.__name__.lower()}.train"),
                         feature=manifold.features,

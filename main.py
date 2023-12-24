@@ -25,6 +25,9 @@ from custom_dataset.cub import get_cub_loader
 from custom_dataset.imagenet import load_data
 from custom_dataset.utils import *
 
+from custom_dataset.celeba import get_celeb_loader, image_size as celeb_img_size
+from custom_dataset.cub import get_cub_loader, image_size as cub_img_size
+from custom_dataset.imagenet import load_data, image_size as imagenet_img_size
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool('train', False, help='train from scratch')
@@ -219,13 +222,18 @@ def train():
         dataset_root = os.path.join(FLAGS.root, "CelebA")
         if not check_celeba5(dataset_root):
             download_extract_celeba5(dataset_root)
-        else:
-            dataset, _, _ = get_celeb_loader(data_root=FLAGS.root,
-                                         transform_mode=tran_transform)
+        if FLAGS.img_size != celeb_img_size:
+            print(f"[WARNING] Image size is set to {celeb_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
+            FLAGS.img_size = celeb_img_size
+        dataset, _, _ = get_celeb_loader(data_root=dataset_root,
+                                            transform_mode=tran_transform)
     elif FLAGS.data_type == "cub":
         dataset_root = os.path.join(FLAGS.root, "CUB")
         os.makedirs(dataset_root, exist_ok=True)
-        dataset, _, _ = get_cub_loader(data_root=FLAGS.root,
+        if FLAGS.img_size != cub_img_size:
+            print(f"[WARNING] Image size is set to {cub_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
+            FLAGS.img_size = cub_img_size
+        dataset, _, _ = get_cub_loader(data_root=dataset_root,
                                        transform_mode=tran_transform)
     elif FLAGS.data_type == "imagenet-lt":
         assert os.path.isdir(os.path.join(FLAGS.root, "images")), "ImageNet dataset cannot be automatically downloaded. Downlaod the dataset and create a folder called `images` in the root folder and copy all the images."
@@ -233,6 +241,9 @@ def train():
             gdown.download_folder(id="19cl6GK5B3p5CxzVBy5i4cWSmBy9-rT_-",
                                   output=FLAGS.root)
             assert os.path.isdir(dataset_root), "Invalid Download. Please Check."
+        if FLAGS.img_size != imagenet_img_size:
+            print(f"[WARNING] Image size is set to {imagenet_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
+            FLAGS.img_size = imagenet_img_size
         dataset, _, _ = load_data(data_root=os.path.join(FLAGS.root, "images"),
                                   dist_path=os.path.join(FLAGS.root, "ImageNet_LT"),
                                   phase="train",

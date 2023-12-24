@@ -58,7 +58,7 @@ def default_loader(path):
     return Image.open(path).convert('RGB')
 
 
-def get_celeb_loader(data_root, transform=None):
+def get_celeb_loader(data_root, transform_mode=None):
     txt_train = os.path.join(data_root, 'celebA_train_orig.txt')
     txt_val = os.path.join(data_root, 'celebA_val_orig.txt')
     txt_test = os.path.join(data_root, 'celebA_test_orig.txt')
@@ -66,9 +66,9 @@ def get_celeb_loader(data_root, transform=None):
     print(data_root)
 
     # data_root = '/home/temp/data/CelebA/'
-    set_train = LT_Dataset(data_root, txt_train, transform=transform)
-    set_val = LT_Dataset(data_root, txt_val, transform=transform)
-    set_test = LT_Dataset(data_root, txt_test, transform=transform)
+    set_train = LT_Dataset(data_root, txt_train, transform=transform_mode)
+    set_val = LT_Dataset(data_root, txt_val, transform=transform_mode)
+    set_test = LT_Dataset(data_root, txt_test, transform=transform_mode)
     # train_loader = DataLoader(set_train, batch_size, shuffle=True, num_workers=num_workers,pin_memory=cuda.is_available())
     # val_loader = DataLoader(set_val, batch_size, shuffle=False, num_workers=num_workers, pin_memory=cuda.is_available())
     # test_loader = DataLoader(set_test, batch_size, shuffle=False, num_workers=num_workers, pin_memory=cuda.is_available())
