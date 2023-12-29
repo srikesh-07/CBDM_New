@@ -35,4 +35,4 @@ python main.py --train  \
         --data_type imagenet-lt --img_size 32 \
         --batch_size 48 --save_step 100000 --sample_step 50000 \
         --cb --tau 0.01 --omega 1.6
-``
+```
