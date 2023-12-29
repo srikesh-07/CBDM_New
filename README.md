@@ -1,6 +1,6 @@
 # Instructions
 
-## 1. Run `generate_stats.py` to generate FID statistics as well as Embeddings for Precision and Recall.
+## 1. Run `python generate_stats.py` to generate FID statistics as well as Embeddings for Precision and Recall.
 
 ## 2. Run below the any of the commands,
 
