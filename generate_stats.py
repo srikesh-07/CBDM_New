@@ -107,15 +107,16 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01):
         dataset, _, _ = get_cub_loader(data_root=dataset_root,
                                        transform_mode=gen_transform(cub_img_size))
     elif dataset_name == "imagenet-lt":
-        assert os.path.isdir(os.path.join(root, "images")), "ImageNet dataset cannot be automatically downloaded. Download the dataset and create a folder called `images` in the root folder and copy all the images."
-        if os.path.isdir(os.path.join(root, "ImageNet_LT")):
+        assert os.path.isdir(os.path.join(FLAGS.root, "images")), "ImageNet dataset cannot be automatically downloaded. Downlaod the dataset and create a folder called `images` in the root folder and copy all the images."
+        if not os.path.isdir(os.path.join(FLAGS.root, "ImageNet_LT")):
+            dataset_root = os.path.join(FLAGS.root, "ImageNet_LT")
             gdown.download_folder(id="19cl6GK5B3p5CxzVBy5i4cWSmBy9-rT_-",
-                                  output=root)
+                                  output=dataset_root)
             assert os.path.isdir(dataset_root), "Invalid Download. Please Check."
-        dataset, _, _ = load_data(data_root=os.path.join(root, "images"),
-                                  dist_path=os.path.join(root, "ImageNet_LT"),
+        dataset, _, _ = load_data(data_root=os.path.join(FLAGS.root, "images"),
+                                  dist_path=os.path.join(FLAGS.root, "ImageNet_LT"),
                                   phase="train",
-                                  transform=gen_transform(imagenet_img_size)
+                                  transform=tran_transform
                                   )
     else:
         print('Please enter a data type included in [cifar10, cifar100, cifar10lt, cifar100lt]')
