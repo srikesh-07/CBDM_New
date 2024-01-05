@@ -87,7 +87,7 @@ class GaussianDiffusionTrainer(nn.Module):
             loss_reg = weight * F.mse_loss(h, h_bal.detach(), reduction='none')
             loss_com = weight * F.mse_loss(h.detach(), h_bal, reduction='none')
 
-        return loss, loss_reg + 1/4 * loss_com
+        return loss.mean(), (loss_reg + 1/4 * loss_com).mean()
 
 class GaussianDiffusionSampler(nn.Module):
     def __init__(self, model, beta_1, beta_T, T, num_class, img_size=32, var_type='fixedlarge'):
