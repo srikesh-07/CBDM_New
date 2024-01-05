@@ -1,6 +1,7 @@
 import numpy as np
 from torchvision.datasets import CIFAR10, CIFAR100
 from torch.utils.data import Subset
+from tqdm import tqdm
 from score.fid import get_statistics
 import os
 import json
@@ -28,7 +29,7 @@ def gen_transform(img_size):
 
 def generate_npz(dataset, name):
     imgs = list()
-    for idx in range(len(dataset)):
+    for idx in tqdm(range(len(dataset))):
         img, _ = dataset[idx]
         imgs.append(np.array(img))
     print(f"Generating Statistics for {dataset.__class__.__name__} "
