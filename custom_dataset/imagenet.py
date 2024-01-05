@@ -54,7 +54,9 @@ class LT_Dataset(Dataset):
         if self.transform is not None:
             sample = self.transform(sample)
 
-        return sample, label, path
+        # return sample, label, path
+        return sample, label
+
 
 # Load datasets
 def load_data(data_root, dist_path, phase="train", transform=None):
