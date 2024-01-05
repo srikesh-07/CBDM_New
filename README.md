@@ -2,6 +2,12 @@
 
 ## 1. Run `python generate_stats.py` to generate FID statistics as well as Embeddings for Precision and Recall.
 
+## Note:
+### (Only for ImageNet-LT)
+1. Download the training dataset - [ILSVRC-2012](https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_train.tar)
+2. Create a folder `images/train` in root directory and extract the tarballs under the folder.
+3. Specify the root directory by `--root` as an argument during the training.
+
 ## 2. Run below the any of the commands,
 
 ## Celeb-A5 (Tested in Colab and Training starts successfully. Post-debugging needs to be done if any error occurs between epochs.)
