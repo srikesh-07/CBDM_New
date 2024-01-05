@@ -237,9 +237,10 @@ def train():
                                        transform_mode=tran_transform)
     elif FLAGS.data_type == "imagenet-lt":
         assert os.path.isdir(os.path.join(FLAGS.root, "images")), "ImageNet dataset cannot be automatically downloaded. Downlaod the dataset and create a folder called `images` in the root folder and copy all the images."
-        if os.path.isdir(os.path.join(FLAGS.root, "ImageNet_LT")):
+        if not os.path.isdir(os.path.join(FLAGS.root, "ImageNet_LT")):
+            dataset_root = os.path.join(FLAGS.root, "ImageNet_LT")
             gdown.download_folder(id="19cl6GK5B3p5CxzVBy5i4cWSmBy9-rT_-",
-                                  output=FLAGS.root)
+                                  output=dataset_root)
             assert os.path.isdir(dataset_root), "Invalid Download. Please Check."
         if FLAGS.img_size != imagenet_img_size:
             print(f"[WARNING] Image size is set to {imagenet_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
