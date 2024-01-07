@@ -8,7 +8,7 @@
 2. Create a folder `images/train` in root directory and extract the tarballs under the folder.
 3. Specify the root directory by `--root` as an argument during the training.
 
-## 2. Run below the any of the commands,
+## 2. Run below the any of the commands, (DDPM)
 
 ## Celeb-A5 (Tested in Colab and Training starts successfully. Post-debugging needs to be done if any error occurs between epochs.)
 ```
