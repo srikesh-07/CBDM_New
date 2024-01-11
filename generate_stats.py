@@ -139,5 +139,5 @@ if __name__ == "__main__":
     os.makedirs("./data", exist_ok=True)
     gen_custom_stats("cub", "./data")
     gen_custom_stats("celeba-5", "./data")
-    gen_custom_stats("imagenet-lt", "/mnt/data1/imagenet_2012/images")
+    # gen_custom_stats("imagenet-lt", "/mnt/data1/imagenet_2012/images")
     
