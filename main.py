@@ -402,6 +402,20 @@ def train():
 
 
 def eval():
+    if FLAGS.augm:
+        tran_transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize([FLAGS.img_size, FLAGS.img_size]),
+            transforms.ToPILImage(),
+            KarrasAugmentationPipeline(0.12),
+        ])
+    else:
+        tran_transform=transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Resize([FLAGS.img_size, FLAGS.img_size])
+        ])
     if FLAGS.data_type == 'cifar10':
         dataset = CIFAR10(
                 root=FLAGS.root,
