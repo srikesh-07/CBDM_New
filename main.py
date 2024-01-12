@@ -402,7 +402,84 @@ def train():
 
 
 def eval():
-    FLAGS.num_class = 100 if 'cifar100' in FLAGS.data_type else 10
+      if FLAGS.data_type == 'cifar10':
+        dataset = CIFAR10(
+                root=FLAGS.root,
+                train=True,
+                download=True,
+                transform=tran_transform)
+    elif FLAGS.data_type == 'cifar100':
+        dataset = CIFAR100(
+                root=FLAGS.root,
+                # root='...',
+                train=True,
+                download=True,
+                transform=tran_transform)
+    elif FLAGS.data_type == 'cifar10lt':
+        dataset = ImbalanceCIFAR10(
+                root=FLAGS.root,
+                # root='...',
+                imb_type='exp',
+                imb_factor=FLAGS.imb_factor,
+                rand_number=0,
+                train=True,
+                transform=tran_transform,
+                target_transform=None,
+                download=True)
+    elif FLAGS.data_type == 'cifar100lt':
+        dataset = ImbalanceCIFAR100(
+                root='/GPFS/data/yimingqin/dd_code/backdoor/benchmarks/pytorch-ddpm/data',
+                # root='...',
+                imb_type='exp',
+                imb_factor=FLAGS.imb_factor,
+                rand_number=0,
+                train=True,
+                transform=tran_transform,
+                target_transform=None,
+                download=True)
+    elif FLAGS.data_type == "celeba-5":
+        dataset_root = os.path.join(FLAGS.root, "CelebA")
+        if not check_celeba5(dataset_root):
+            download_extract_celeba5(dataset_root)
+        if FLAGS.img_size != celeb_img_size:
+            print(f"[WARNING] Image size is set to {celeb_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
+            FLAGS.img_size = celeb_img_size
+        dataset, _, _ = get_celeb_loader(data_root=dataset_root,
+                                            transform_mode=tran_transform)
+    elif FLAGS.data_type == "cub":
+        dataset_root = os.path.join(FLAGS.root, "CUB")
+        os.makedirs(dataset_root, exist_ok=True)
+        if FLAGS.img_size != cub_img_size:
+            print(f"[WARNING] Image size is set to {cub_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
+            FLAGS.img_size = cub_img_size
+        dataset, _, _ = get_cub_loader(data_root=dataset_root,
+                                       transform_mode=tran_transform)
+    elif FLAGS.data_type == "imagenet-lt":
+        assert os.path.isdir(os.path.join(FLAGS.root, "images")), "ImageNet dataset cannot be automatically downloaded. Downlaod the dataset and create a folder called `images` in the root folder and copy all the images."
+        if not os.path.isdir(os.path.join(FLAGS.root, "ImageNet_LT")):
+            dataset_root = os.path.join(FLAGS.root, "ImageNet_LT")
+            gdown.download_folder(id="19cl6GK5B3p5CxzVBy5i4cWSmBy9-rT_-",
+                                  output=dataset_root)
+            assert os.path.isdir(dataset_root), "Invalid Download. Please Check."
+        if FLAGS.img_size != imagenet_img_size:
+            print(f"[WARNING] Image size is set to {imagenet_img_size} as mentioned in CBDM but default given is {FLAGS.img_size}")
+            FLAGS.img_size = imagenet_img_size
+        dataset, _, _ = load_data(data_root=os.path.join(FLAGS.root, "images"),
+                                  dist_path=os.path.join(FLAGS.root, "ImageNet_LT"),
+                                  phase="train",
+                                  transform=tran_transform
+                                  )
+    else:
+        print('Please enter a data type included in [cifar10, cifar100, cifar10lt, cifar100lt]')
+
+    if hasattr(dataset, "class_names"): # Exception for CUB
+        FLAGS.num_class = len(dataset.class_names)
+    else:
+        FLAGS.num_class = len(set(dataset.targets))
+    print(f"Total Number of Labels: {FLAGS.num_class}")
+    FLAGS.num_images = len(dataset)
+    print(f'[WARNING] Total Number of Output Image has been set to {FLAGS.num_images} (Total Images in Dataset)')
+    # FLAGS.num_class = 100 if 'cifar100' in FLAGS.data_type else 10
     model = UNet(
         T=FLAGS.T, ch=FLAGS.ch, ch_mult=FLAGS.ch_mult, attn=FLAGS.attn,
         num_res_blocks=FLAGS.num_res_blocks, dropout=FLAGS.dropout,
