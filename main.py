@@ -402,7 +402,7 @@ def train():
 
 
 def eval():
-      if FLAGS.data_type == 'cifar10':
+    if FLAGS.data_type == 'cifar10':
         dataset = CIFAR10(
                 root=FLAGS.root,
                 train=True,
