@@ -133,7 +133,7 @@ def get_inception_and_fid_score(images, labels, fid_cache, num_images=None,
         #    feats = np.load('/mnt/workspace/dlly/ucm3/stats/cifar100_feats.npy')
         # elif FLAGS.data_type == "cifar10" or FLAGS.data_type == "cifar10lt":
         #    feats = np.load('/mnt/workspace/dlly/ucm3/stats/cifar10_feats.npy')
-        feats = np.load(f"./embeddings/{FLAGS.data_type}_feats.npy")
+        feats = np.load(f"./embeddings/{FLAGS.data_type}_feats.npz")
         feats = torch.Tensor(feats)
         assert feats.ndim == 4 
         if len(fid_acts) != feats.shape[0]:
@@ -162,7 +162,7 @@ def get_inception_and_fid_score(images, labels, fid_cache, num_images=None,
         #    feats = np.load('/mnt/workspace/dlly/ucm3/stats/cifar100_feats.npy')
         # elif FLAGS.data_type == "cifar10" or FLAGS.data_type == "cifar10lt":
         #    feats = np.load('/mnt/workspace/dlly/ucm3/stats/cifar10_feats.npy')
-        feats = np.load(f"./embeddings/{FLAGS.data_type}_feats.npy")
+        feats = np.load(f"./embeddings/{FLAGS.data_type}_feats.npz")
         if len(fid_acts) != feats.shape[0]:
             raise ValueError(f"Number of Generated Samples ({len(fid_acts)}) is greater than actual number of images in the actual dataset ({len(feats.shape[0])}).")
         print(f"IPR Number of Samples is {feats.shape[0]}")
