@@ -491,7 +491,10 @@ def eval():
     else:
         FLAGS.num_class = len(set(dataset.targets))
     print(f"Total Number of Labels: {FLAGS.num_class}")
-    FLAGS.num_images = len(dataset)
+    if FLAGS.data_type != 'cub' and FLAGS.data_type != 'celeba-5':
+        FLAGS.num_images = 50000
+    else:
+        FLAGS.num_images = len(dataset)
     print(f'[WARNING] Total Number of Output Image has been set to {FLAGS.num_images} (Total Images in Dataset)')
     # FLAGS.num_class = 100 if 'cifar100' in FLAGS.data_type else 10
     model = UNet(
