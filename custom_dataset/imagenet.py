@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 from torchvision import transforms
 import os
+import random
 from PIL import Image
 
 
@@ -31,19 +32,30 @@ data_transforms = {
 # Dataset
 class LT_Dataset(Dataset):
     
-    def __init__(self, root, txt, transform=None):
+    def __init__(self, root, txt, transform=None, random_sampling=None, random_seed=42):
         self.img_path = []
         self.targets = []
         self.transform = transform
+        self.random_sampling = random_sampling
         with open(txt) as f:
             for line in f:
                 self.img_path.append(os.path.join(root, line.split()[0]))
                 self.targets.append(int(line.split()[1]))
+        if random_sampling:
+            random.seed(random_seed)
+            self.indices = random.sample(range(0, len(self.targets)), k=random_sampling)
+            
         
     def __len__(self):
-        return len(self.targets)
+        if self.random_sampling:
+            return len(self.indices)
+        else:
+            return len(self.targets)
         
     def __getitem__(self, index):
+
+        if self.random_sampling:
+            index = self.indices[index]
 
         path = self.img_path[index]
         label = self.targets[index]
@@ -59,7 +71,7 @@ class LT_Dataset(Dataset):
 
 
 # Load datasets
-def load_data(data_root, dist_path, phase="train", transform=None):
+def load_data(data_root, dist_path, phase="train", transform=None, random_sampling=None, random_seed=42):
     
     dataset = os.path.basename(dist_path)
     txt = '%s/%s_%s.txt'%(dist_path, dataset, (phase if phase != 'train_plain' else 'train'))
@@ -73,7 +85,7 @@ def load_data(data_root, dist_path, phase="train", transform=None):
 
     # print('Use data transformation:', transform)
 
-    dataset = LT_Dataset(data_root, txt, transform)
+    dataset = LT_Dataset(data_root, txt, transform, random_sampling=random_sampling, random_seed=random_seed)
 
     return dataset, None, None
 
