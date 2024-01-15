@@ -60,7 +60,7 @@ def perform_inference(dataset):
     np.save(f"cifar_original.npy", embeddings)
     print("Embeddings are saved...")
 
-def gen_custom_stats(dataset_name, root, imb_factor=0.01):
+def gen_custom_stats(dataset_name, root, imb_factor=0.01, num_images=None):
     if dataset_name == 'cifar10':
         dataset = CIFAR10(
                 root=root,
@@ -117,7 +117,8 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01):
         dataset, _, _ = load_data(data_root=os.path.join(root, "images"),
                                   dist_path=os.path.join(root, "ImageNet_LT"),
                                   phase="train",
-                                  transform=gen_transform(imagenet_img_size)
+                                  transform=gen_transform(imagenet_img_size),
+                                  random_sampling=num_images
                                   )
     else:
         print('Please enter a data type included in [cifar10, cifar100, cifar10lt, cifar100lt]')
@@ -139,5 +140,5 @@ if __name__ == "__main__":
     os.makedirs("./data", exist_ok=True)
     gen_custom_stats("cub", "./data")
     gen_custom_stats("celeba-5", "./data")
-    # gen_custom_stats("imagenet-lt", "/mnt/data1/imagenet_2012/images")
+    gen_custom_stats("imagenet-lt", "/mnt/data1/imagenet_2012/images", num_images=50000)
     
