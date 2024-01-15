@@ -44,6 +44,7 @@ class LT_Dataset(Dataset):
         if random_sampling:
             random.seed(random_seed)
             self.indices = random.sample(range(0, len(self.targets)), k=random_sampling)
+            print(f"Totally sampled {random_sampling} images from ImageNetLT dataset and indices starts with {self.indices[0]}")
             
         
     def __len__(self):
