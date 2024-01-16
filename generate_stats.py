@@ -40,8 +40,9 @@ def generate_npz(dataset, name):
     np.savez(os.path.join("stats", f"{name.lower()}.train"),
                 mu=mu,
                 sigma=sigma)
+    
 
-def perform_inference(dataset):
+def perform_inference(dataset, dataset_name):
     block_idx1 = InceptionV3.BLOCK_INDEX_BY_DIM[2048]
     model = InceptionV3([block_idx1]).to("cuda")
     model.eval()
@@ -57,7 +58,7 @@ def perform_inference(dataset):
             embeddings.append(out.cpu().numpy())
 
     embeddings = np.concatenate(embeddings, axis=0)
-    np.save(f"cifar_original.npy", embeddings)
+    np.save(os.path.join("./embeddings", f"{dataset_name.lower()}_feats"), embeddings)
     print("Embeddings are saved...")
 
 def gen_custom_stats(dataset_name, root, imb_factor=0.01, num_images=None):
@@ -125,13 +126,14 @@ def gen_custom_stats(dataset_name, root, imb_factor=0.01, num_images=None):
         exit(0)
 
     generate_npz(dataset, dataset_name)
-    embeddings_creator = IPR(32, k=5, num_samples=len(dataset))
-    manifold = embeddings_creator.compute_manifold(torch.stack([dataset[idx][0] for idx in range(len(dataset))], dim=0))
-    # print('saving manifold to', fname, '...')
-    os.makedirs("./embeddings", exist_ok=True)
-    np.savez_compressed(os.path.join("./embeddings", f"{dataset_name.lower()}_feats"),
-                        feature=manifold.features,
-                        radii=manifold.radii)
+    perform_inference(dataset, dataset_name)
+    # embeddings_creator = IPR(32, k=5, num_samples=len(dataset))
+    # manifold = embeddings_creator.compute_manifold(torch.stack([dataset[idx][0] for idx in range(len(dataset))], dim=0))
+    # # print('saving manifold to', fname, '...')
+    # os.makedirs("./embeddings", exist_ok=True)
+    # np.savez_compressed(os.path.join("./embeddings", f"{dataset_name.lower()}_feats"),
+    #                     feature=manifold.features,
+    #                     radii=manifold.radii)
 
     print("Finished..")
 
