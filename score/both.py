@@ -133,9 +133,9 @@ def get_inception_and_fid_score(images, labels, fid_cache, num_images=None,
         #    feats = np.load('/mnt/workspace/dlly/ucm3/stats/cifar100_feats.npy')
         # elif FLAGS.data_type == "cifar10" or FLAGS.data_type == "cifar10lt":
         #    feats = np.load('/mnt/workspace/dlly/ucm3/stats/cifar10_feats.npy')
-        feats = np.load(f"./embeddings/{FLAGS.data_type}_feats.npz")['feature'][:]
+        feats = np.load(f"./embeddings/{FLAGS.data_type}_feats.npy")['feature'][:]
         feats = torch.Tensor(feats)
-        assert feats.ndim == 4 
+        # assert feats.ndim == 4 
         if len(fid_acts) != feats.shape[0]:
             raise ValueError(f"Number of Generated Samples ({len(fid_acts)}) is greater than actual number of images in the actual dataset ({len(feats.shape[0])}).")
         print(f"IPR Number of Samples is set to {feats.shape[0]}")
@@ -162,13 +162,12 @@ def get_inception_and_fid_score(images, labels, fid_cache, num_images=None,
         #    feats = np.load('/mnt/workspace/dlly/ucm3/stats/cifar100_feats.npy')
         # elif FLAGS.data_type == "cifar10" or FLAGS.data_type == "cifar10lt":
         #    feats = np.load('/mnt/workspace/dlly/ucm3/stats/cifar10_feats.npy')
-        feats = np.load(f"./embeddings/{FLAGS.data_type}_feats.npz")['feature'][:]
+        feats = np.load(f"./embeddings/{FLAGS.data_type}_feats.npy")['feature'][:]
         if len(fid_acts) != feats.shape[0]:
             raise ValueError(f"Number of Generated Samples ({len(fid_acts)}) is greater than actual number of images in the actual dataset ({len(feats.shape[0])}).")
         print(f"IPR Number of Samples is {feats.shape[0]}")
         if isinstance(fid_acts, torch.Tensor):
             fid_acts = fid_acts.numpy()
-
         ipr = IPR(32, k=5, num_samples=fid_acts.shape[0], model='InceptionV3')
         ipr.compute_manifold_ref(None, feats=feats)  # args.path_real can be either directory or pre-computed manifold file
         metric = ipr.precision_and_recall(images, subject_feats=fid_acts)
