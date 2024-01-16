@@ -58,6 +58,7 @@ def perform_inference(dataset, dataset_name):
             embeddings.append(out.cpu().numpy())
 
     embeddings = np.concatenate(embeddings, axis=0)
+    os.makedirs('embeddings', exist_ok=True)
     np.save(os.path.join("./embeddings", f"{dataset_name.lower()}_feats"), embeddings)
     print("Embeddings are saved...")
 
