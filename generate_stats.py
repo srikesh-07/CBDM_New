@@ -1,8 +1,8 @@
 import numpy as np
 from torchvision.datasets import CIFAR10, CIFAR100
 from torch.utils.data import Subset
-from tqdm import tqdm
-from score.fid import get_statistics
+from tqdm.notebook import tqdm
+from score.fid import get_statistics, calculate_frechet_distance
 import os
 from itertools import combinations
 import json
@@ -11,13 +11,14 @@ from dataset import ImbalanceCIFAR100, ImbalanceCIFAR10
 import torch
 from score.inception import InceptionV3
 from score.improved_prd import IPR
+from torch.distributions import MultivariateNormal, kl_divergence
 from itertools import combinations
 from torchvision.datasets import CIFAR10, CIFAR100
 from custom_dataset.celeba import get_celeb_loader, image_size as celeb_img_size
 from custom_dataset.cub import get_cub_loader, image_size as cub_img_size
 from custom_dataset.imagenet import load_data, image_size as imagenet_img_size
 from custom_dataset.utils import *
-
+import math
 
 def gen_transform(img_size):
     tran_transform = transforms.Compose([
@@ -54,10 +55,10 @@ def get_classwise_indices(dataset):
             indices[y].append(idx)
     return indices
 
+
 def get_classwise_statistics(dataset, indices, save_dir=None):
     statistics = dict()
-
-    for class_id, cls_indices in indices.items():
+    for class_id, cls_indices in tqdm(indices.items()):
         imgs = list()
         for idx in cls_indices:
             img, _ = dataset[idx]
@@ -67,21 +68,105 @@ def get_classwise_statistics(dataset, indices, save_dir=None):
                                 'sigma': sigma}
         
     if save_dir:
-        np.save(os.path.join(save_dir, 'classwise_stats.npy'))
+        np.save(os.path.join(save_dir, 'classwise_stats.npy'), statistics)
 
     return statistics
 
+def calculate_log_determinant(mat1, mat2):
+    # mat1 = np.clip(mat1, a_min=0)
+    # mat2 = np.clip(mat2, a_min=0)
+    sign_1, log_det_1 = np.linalg.slogdet(mat1)
+    sign_2, log_det_2 = np.linalg.slogdet(mat2)
+    # print(math.log(sign_1))
+    # val = (math.log(sign_1) + log_det_1) -  (math.log(sign_2) + log_det_2)
+    # if sign_1 <= 0 or sign_2 <= 0:
+    #   print('Invalid CoVariance Matrix Found')
+    val = log_det_1 - log_det_2 #Skipping the sign assuming the determinant of covariance matric will always be positive.
+    return val
 
+# def calculate_log_determinant(mat1, mat2):
+#     log_det_1 = torch.logdet(torch.tensor(mat1))
+#     log_det_2 = torch.logdet(torch.tensor(mat2))
+#     return (log_det_1 - log_det_2).item()
+
+
+
+# def custom_kldiv_mean_covarinace(dist_1, dist_2, return_transformed=True):
+#     k = 256
+#     # dist_2['sigma'] = np.clip(dist_2['sigma'], a_min=1e-16, a_max=np.inf)
+#     # dist_1['sigma'] = np.clip(dist_1['sigma'], a_min=1e-16, a_max=np.inf)
+#     sigma_2_inv = np.linalg.inv(dist_2['sigma'])
+#     trace = np.trace(np.dot(sigma_2_inv, dist_1['sigma']))
+#     mu_diff = dist_2['mu'] - dist_1['mu']
+#     diff_term = np.dot(mu_diff.T, np.dot(sigma_2_inv, mu_diff))
+#     # det_term = np.log(np.linalg.det(dist_2['sigma']) / np.linalg.det(dist_1['sigma']))
+#     det_term = calculate_log_determinant(dist_2['sigma'], dist_1['sigma'])
+#     kl_div = 0.5 * (trace + diff_term - k + det_term)
+#     return kl_div
+
+
+# def custom_kldiv_mean_covarinace(dist_1, dist_2, return_transformed=True):
+#     # dist_1 = torch.tensor(dist_1).cuda()
+#     # dist_2 = torch.tensor(dist_2).cuda()
+
+
+#     dist_1_mean = torch.tensor(dist_1['mu']).cuda()
+#     dist_2_mean = torch.tensor(dist_2['mu']).cuda()
+
+#     dist_1_sigma = torch.tensor(np.absolute(dist_1['sigma'])).cuda()
+#     dist_2_sigma = torch.tensor(np.absolute(dist_2['sigma'])).cuda()
+
+#     # Create two multivariate normal distributions
+#     dist1 = MultivariateNormal(dist_1_mean, dist_1_sigma)
+#     dist2 = MultivariateNormal(dist_2_mean, dist_2_sigma)
+
+#     # Calculate the KL divergence between the two distributions
+#     kl = kl_divergence(dist1, dist2)
+#     print(kl)
+
+#     return kl.cpu().item()
+
+# def custom_kldiv_mean_covarinace(dist_1, dist_2, return_transformed=True):
+#     mean1 = torch.tensor(dist_1['mu']).cuda()
+#     mean2 = torch.tensor(dist_2['mu']).cuda()
+
+#     covariance1 = torch.tensor(np.absolute(dist_1['sigma'])).cuda()
+#     covariance2 = torch.tensor(np.absolute(dist_2['sigma'])).cuda()
+    
+#     dist1 = MultivariateNormal(mean1, covariance1)
+#     dist2 = MultivariateNormal(mean2, covariance2)
+
+#     # Calculate the mean distribution
+#     meanM = (mean1 + mean2) / 2
+#     # The covariance matrix of the mean distribution can be more complex to define.
+#     # A simple approach is to take the mean of the covariance matrices.
+#     # However, this might not always be the best approach, especially if the distributions are not similar.
+#     covarianceM = (covariance1 + covariance2) / 2
+#     distM = MultivariateNormal(meanM, covarianceM)
+
+#     # Calculate the KL divergences
+#     kl1 = kl_divergence(dist1, distM)
+#     kl2 = kl_divergence(dist2, distM)
+
+#     # Calculate the JS divergence
+#     js_divergence = (kl1 + kl2) / 2
+
+
+#     print(js_divergence)
+
+#     return js_divergence.cpu().item()
+
+
+# def custom_kldiv_mean_covarinace(dist_1, dist_2, return_transformed=True):
+#     fid = calculate_frechet_distance(dist_1['mu'], dist_1['sigma'], dist_2['mu'], dist_2['sigma'])
+#     print(fid)
+#     return fid
 
 def custom_kldiv_mean_covarinace(dist_1, dist_2, return_transformed=True):
-    k = len(dist_2['sigma'])
-    sigma_2_inv = np.linalg.inv(dist_2['sigma'])
-    trace = np.trace(np.dot(sigma_2_inv, dist_1['sigma']))
-    mu_diff = dist_2['mu'] - dist_1['mu']
-    diff_term = np.dot(mu_diff.T, np.dot(sigma_2_inv, mu_diff))
-    det_term = np.log(np.linalg.det(dist_2['sigma']) / np.linalg.det(dist_1['sigma']))
-    kl_div = 0.5 * (trace + diff_term - k + det_term)
-    return kl_div
+# Calculate the Euclidean distance
+    euclidean_distance = torch.norm(torch.tensor(dist_1['mu']) - torch.tensor(dist_2['mu']), p=2)
+    print(euclidean_distance)
+    return euclidean_distance.cpu().item()
 
 
 def class_pairwise_kldiv(classwise_stats):
@@ -89,7 +174,7 @@ def class_pairwise_kldiv(classwise_stats):
     kldivs = list()
     for cls_id1, cls_id2 in tqdm(combinations(range(len(classwise_stats)), 2)):
         kl_div = round(custom_kldiv_mean_covarinace(classwise_stats[cls_id1], classwise_stats[cls_id2]), 3)
-        new_kl_div = 1 / 1 + kl_div
+        new_kl_div = 1 / (1 + kl_div)
         kldict.append({
             'dist_1': cls_id1,
             'dist_2': cls_id2,
@@ -97,16 +182,15 @@ def class_pairwise_kldiv(classwise_stats):
             'new_kl_div': new_kl_div
         })
         kldivs.append(new_kl_div)
-
-        kl_div = round(custom_kldiv_mean_covarinace(classwise_stats[cls_id2], classwise_stats[cls_id1]), 3)
-        new_kl_div = 1 / 1 + kl_div
-        kldict.append({
-            'dist_1': cls_id2,
-            'dist_2': cls_id1,
-            'kl_div': kl_div,
-            'new_kl_div': 1 / (1 + kl_div)
-        })
-        kldivs.append(new_kl_div)
+        # kl_div = round(custom_kldiv_mean_covarinace(classwise_stats[cls_id2], classwise_stats[cls_id1]), 3)
+        # new_kl_div = 1 / 1 + kl_div
+        # kldict.append({
+        #     'dist_1': cls_id2,
+        #     'dist_2': cls_id1,
+        #     'kl_div': kl_div,
+        #     'new_kl_div': 1 / (1 + kl_div)
+        # })
+        # kldivs.append(new_kl_div)
 
     kl_div_mean = np.mean(kldivs)
 
@@ -152,7 +236,10 @@ def gen_custom_stats(root, imb_factor=0.01, savedir=None):
 
     if savedir:
         with open(os.path.join(savedir, 'classwise_kldiv.json'), 'w') as json_file:
-            json.dump(classwise_kldiv, json_file)
+            json.dump(classwise_kldiv, json_file, indent=4)
+
+
+    print(kl_div_mean)
 
     return kl_div_mean
 
@@ -202,5 +289,12 @@ def gen_custom_stats(root, imb_factor=0.01, savedir=None):
 
 if __name__ == "__main__":
     os.makedirs("./data", exist_ok=True)
-    gen_custom_stats('data', savedir="test_0.01")
-    
+    # factors = [0.005, 0.010, 0.015, 0.020, 0.025, 0.050, 0.075, 0.1, 0.125, 0.150, 0.175, 0.2, 0.225]
+    # factors = range(0.005, 0.255, 0.005)
+    with open("output.txt", 'w') as txt_file:
+        # for factor in factors:
+        factor = 0.005
+        while factor <= 0.250:
+            avg = gen_custom_stats('data', imb_factor=factor, savedir=f"cifar10lt_{factor}")
+            txt_file.write(f'CIFAR10LT {factor} {avg}\n')
+            factor += 0.005
