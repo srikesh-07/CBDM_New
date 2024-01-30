@@ -196,7 +196,7 @@ def gen_custom_stats(root, imb_factor=0.01, savedir=None):
     #     print('Please enter a data type included in [cifar10, cifar100, cifar10lt, cifar100lt]')
     #     exit(0)
 
-    generate_npz(dataset, dataset_name)
+    # generate_npz(dataset, dataset_name)
 
 
 
