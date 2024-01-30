@@ -143,8 +143,11 @@ def gen_custom_stats(root, imb_factor=0.01, savedir=None):
     
     if savedir:
         os.makedirs(savedir, exist_ok=True)
+    print('[INFO] Obtaining Classwise Indices')
     classwise_indices = get_classwise_indices(dataset)
+    print('[INFO] Generating Classwise Statistics')
     classwise_stats = get_classwise_statistics(dataset, classwise_indices, save_dir=savedir)
+    print('[INFO] Calculating Class-pairwise KL-Divergence')
     classwise_kldiv, kl_div_mean = class_pairwise_kldiv(classwise_stats)
 
     if savedir:
@@ -200,3 +203,4 @@ def gen_custom_stats(root, imb_factor=0.01, savedir=None):
 if __name__ == "__main__":
     os.makedirs("./data", exist_ok=True)
     gen_custom_stats('data', savedir="test_0.01")
+    
