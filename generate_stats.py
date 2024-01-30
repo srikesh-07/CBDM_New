@@ -66,7 +66,7 @@ def get_classwise_statistics(dataset, indices, save_dir=None):
         statistics[class_id] = {'mu': mu,
                                 'sigma': sigma}
         
-    if save:
+    if save_dir:
         np.save(os.path.join(save_dir, 'classwise_stats.npy'))
 
     return statistics
